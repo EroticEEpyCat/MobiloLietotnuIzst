@@ -9,8 +9,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,11 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -38,9 +36,9 @@ public class MainActivity extends AppCompatActivity {
     Button calcButton, cameraButton;
     TextView resultText;
 
-    EditText participantsInput;
-    Button fetchActivityButton;
-    TextView activityResultText, apiEndpointText;
+    EditText promptInput;
+    Button aiButton;
+    TextView aiResultText;
 
     Uri imageUri;
 
@@ -49,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Bind UI elements
+
         grade1 = findViewById(R.id.grade1);
         grade2 = findViewById(R.id.grade2);
         grade3 = findViewById(R.id.grade3);
@@ -57,26 +55,24 @@ public class MainActivity extends AppCompatActivity {
         cameraButton = findViewById(R.id.cameraButton);
         resultText = findViewById(R.id.resultText);
 
-        participantsInput = findViewById(R.id.participantsInput);
-        fetchActivityButton = findViewById(R.id.fetchActivityButton);
-        activityResultText = findViewById(R.id.activityResultText);
-        apiEndpointText = findViewById(R.id.apiEndpointText);
+        promptInput = findViewById(R.id.participantsInput);
+        aiButton = findViewById(R.id.fetchActivityButton);
+        aiResultText = findViewById(R.id.activityResultText);
 
-        // Grade calculation
+
         calcButton.setOnClickListener(v -> {
             try {
                 int g1 = Integer.parseInt(grade1.getText().toString());
                 int g2 = Integer.parseInt(grade2.getText().toString());
                 int g3 = Integer.parseInt(grade3.getText().toString());
-
                 double average = (g1 + g2 + g3) / 3.0;
-                resultText.setText("Vidējā atzīme: " + average);
+                resultText.setText("AVERAGE GRADE: " + average);
             } catch (NumberFormatException e) {
-                Toast.makeText(MainActivity.this, "Lūdzu, ievadiet visas atzīmes", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "FILL IN ALL THE GRADES", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Camera functionality
+
         cameraButton.setOnClickListener(v -> {
             if (checkPermissions()) {
                 openCamera();
@@ -85,38 +81,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Update endpoint preview dynamically
-        participantsInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String participants = s.toString().trim();
-                apiEndpointText.setText("API Endpoint: https://bored-api.appbrewery.com/filter?participants=" + participants);
-            }
-            @Override
-            public void afterTextChanged(Editable s) { }
-        });
 
-        // Fetch activity from App Brewery API
-        fetchActivityButton.setOnClickListener(v -> {
-            String participantsStr = participantsInput.getText().toString().trim();
-            if (participantsStr.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Ievadiet dalībnieku skaitu", Toast.LENGTH_SHORT).show();
-                return;
+        aiButton.setOnClickListener(v -> {
+            String prompt = promptInput.getText().toString().trim();
+            if (prompt.isEmpty()) {
+                Toast.makeText(MainActivity.this, "ENTER A PROMPT", Toast.LENGTH_SHORT).show();
+            } else {
+                callFreeAI(prompt);
             }
-            int participants = Integer.parseInt(participantsStr);
-            fetchActivity(participants);
         });
     }
 
-    // Check camera permission
+
+
     private boolean checkPermissions() {
         int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         return cameraPermission == PackageManager.PERMISSION_GRANTED;
     }
 
-    // Request camera permission
     private void requestPermissions() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.CAMERA},
@@ -130,16 +112,15 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
             } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "NEED CAMERA PERMISSION", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    // Open camera and save image to gallery
     private void openCamera() {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "New Picture");
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From Camera");
+        values.put(MediaStore.Images.Media.TITLE, "PIC");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Camera");
 
         imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
@@ -152,61 +133,62 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Toast.makeText(this, "Attēls saglabāts galerijā!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Pic saved in gallery!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // Fetch activity from App Brewery API
-    private void fetchActivity(int participants) {
-        String urlString = "https://bored-api.appbrewery.com/filter?participants=" + participants;
 
+
+    private void callFreeAI(String prompt) {
         new AsyncTask<String, Void, String>() {
             @Override
-            protected String doInBackground(String... urls) {
+            protected String doInBackground(String... params) {
                 try {
-                    URL url = new URL(urls[0]);
+                    URL url = new URL("https://apifreellm.com/api/chat");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setConnectTimeout(5000);
-                    conn.setReadTimeout(5000);
-                    conn.connect();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                    conn.setRequestProperty("Accept", "application/json");
+                    conn.setDoOutput(true);
 
-                    int responseCode = conn.getResponseCode();
 
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(
-                            responseCode == HttpURLConnection.HTTP_OK ? conn.getInputStream() : conn.getErrorStream()
-                    ));
-                    StringBuilder result = new StringBuilder();
+                    conn.setConnectTimeout(30000);
+                    conn.setReadTimeout(60000);
+                    JSONObject body = new JSONObject();
+                    body.put("message", prompt);
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(body.toString().getBytes("UTF-8"));
+                    os.close();
+
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(
+                                    conn.getResponseCode() == HttpURLConnection.HTTP_OK
+                                            ? conn.getInputStream()
+                                            : conn.getErrorStream()
+                            )
+                    );
+
+                    StringBuilder response = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        result.append(line);
+                        response.append(line);
                     }
                     reader.close();
 
-                    // Log the raw response
-                    android.util.Log.d("API_DEBUG", "Raw JSON: " + result.toString());
-
-                    JSONArray jsonArray = new JSONArray(result.toString());
-
-                    if (jsonArray.length() == 0) {
-                        return "Nav aktivitāšu šim dalībnieku skaitam";
-                    }
-
-                    // Return the first activity
-                    JSONObject firstActivity = jsonArray.getJSONObject(0);
-                    return firstActivity.getString("activity");
+                    JSONObject json = new JSONObject(response.toString());
+                    return json.optString("response", "No response");
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    android.util.Log.e("API_DEBUG", "Exception: ", e);
-                    return "Kļūda: " + e.getMessage();
+                    return "Error: " + e.getMessage();
                 }
             }
 
             @Override
-            protected void onPostExecute(String activity) {
-                activityResultText.setText(activity);
+            protected void onPostExecute(String result) {
+                aiResultText.setText(result);
             }
-        }.execute(urlString);
+        }.execute();
     }
 }

@@ -1,78 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#212020"
     android:orientation="vertical"
     android:padding="24dp">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CRAZY GOOD APP"
+        android:textAlignment="center"
+        android:textColor="#D7AFE7"
+        android:textSize="24sp" />
 
     <EditText
         android:id="@+id/grade1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Atzīme 1"
-        android:inputType="number" />
+        android:backgroundTint="#D6B2DE"
+        android:hint="Grade 1"
+        android:inputType="number"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81" />
 
     <EditText
         android:id="@+id/grade2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Atzīme 2"
-        android:inputType="number" />
+        android:backgroundTint="#D6B2DE"
+        android:hint="Grade 2"
+        android:inputType="number"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81" />
 
     <EditText
         android:id="@+id/grade3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Atzīme 3"
-        android:inputType="number" />
+        android:backgroundTint="#D6B2DE"
+        android:hint="Grade 3"
+        android:inputType="number"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81" />
 
     <Button
         android:id="@+id/calcButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Aprēķināt" />
+        android:text="Average grade"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/resultText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:paddingTop="16dp" />
+        android:backgroundTint="#D6B2DE"
+        android:paddingTop="16dp"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81"
+        android:textSize="18sp" />
 
-    <!-- Camera button -->
     <Button
         android:id="@+id/cameraButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nobildēt attēlu" />
+        android:text="Camera"
+        android:textSize="16sp" />
 
     <!-- API section -->
     <TextView
         android:id="@+id/apiEndpointText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="API Endpoint: https://www.boredapi.com/api/activity?participants="
-        android:textSize="16sp"
-        android:paddingTop="16dp" />
+        android:backgroundTint="#D6B2DE"
+        android:paddingTop="16dp"
+        android:text="AI API on https://apifreellm.com/api/chat"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81"
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/participantsInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ievadiet dalībnieku skaitu"
-        android:inputType="number" />
+        android:backgroundTint="#D6B2DE"
+        android:hint="Prompt here"
+        android:inputType="text"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81" />
 
     <Button
         android:id="@+id/fetchActivityButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Saņemt aktivitāti" />
+        android:text="SEND"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/activityResultText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:paddingTop="8dp" />
-
+        android:backgroundTint="#D6B2DE"
+        android:paddingTop="8dp"
+        android:textColor="#D7C5E7"
+        android:textColorHint="#806C81"
+        android:textSize="16sp" />
 </LinearLayout>
