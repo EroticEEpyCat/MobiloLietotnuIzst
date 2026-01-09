@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
                     conn.setRequestProperty("Accept", "application/json");
                     conn.setDoOutput(true);
 
+                    conn.setConnectTimeout(30000);
+                    conn.setReadTimeout(60000);
+
                     JSONObject body = new JSONObject();
                     body.put("message", prompt);
 
