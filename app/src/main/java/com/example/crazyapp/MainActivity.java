@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         grade1 = findViewById(R.id.grade1);
         grade2 = findViewById(R.id.grade2);
         grade3 = findViewById(R.id.grade3);
@@ -58,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         promptInput = findViewById(R.id.participantsInput);
         aiButton = findViewById(R.id.fetchActivityButton);
         aiResultText = findViewById(R.id.activityResultText);
-
 
         calcButton.setOnClickListener(v -> {
             try {
@@ -72,15 +70,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         cameraButton.setOnClickListener(v -> {
-            if (checkPermissions()) {
-                openCamera();
-            } else {
-                requestPermissions();
-            }
+            if (checkPermissions()) openCamera();
+            else requestPermissions();
         });
-
 
         aiButton.setOnClickListener(v -> {
             String prompt = promptInput.getText().toString().trim();
@@ -91,8 +84,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
 
     private boolean checkPermissions() {
         int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
@@ -109,11 +100,8 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "NEED CAMERA PERMISSION", Toast.LENGTH_SHORT).show();
-            }
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) openCamera();
+            else Toast.makeText(this, "NEED CAMERA PERMISSION", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -121,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, "PIC");
         values.put(MediaStore.Images.Media.DESCRIPTION, "Camera");
-
         imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -132,12 +119,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK)
             Toast.makeText(this, "Pic saved in gallery!", Toast.LENGTH_SHORT).show();
-        }
     }
-
-
 
     private void callFreeAI(String prompt) {
         new AsyncTask<String, Void, String>() {
@@ -151,9 +135,6 @@ public class MainActivity extends AppCompatActivity {
                     conn.setRequestProperty("Accept", "application/json");
                     conn.setDoOutput(true);
 
-
-                    conn.setConnectTimeout(30000);
-                    conn.setReadTimeout(60000);
                     JSONObject body = new JSONObject();
                     body.put("message", prompt);
 
@@ -171,9 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
                     StringBuilder response = new StringBuilder();
                     String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
+                    while ((line = reader.readLine()) != null) response.append(line);
                     reader.close();
 
                     JSONObject json = new JSONObject(response.toString());
@@ -188,6 +167,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(String result) {
                 aiResultText.setText(result);
+
+                DBHelper db = new DBHelper(MainActivity.this);
+                db.insertPrompt(promptInput.getText().toString(), result);
+
+                Intent intent = new Intent(MainActivity.this, PromptsActivity.class);
+                startActivity(intent);
             }
         }.execute();
     }
